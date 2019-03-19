@@ -6,7 +6,7 @@ public class Tile : MonoBehaviour {
 	static bool draggingHappening = false;
 	public enum tyleType {red, purple};
 	public tyleType type = tyleType.red;
-	bool falling = true;
+	bool falling = false;
 	float fallSpeed = 5.0f;
 
 	float cellSize = 0.5f;
@@ -62,8 +62,16 @@ public class Tile : MonoBehaviour {
 	// }
 	void OnTriggerEnter2D(Collider2D other)
 	{
-		if(other.CompareTag("Blip")){
+		if(other.CompareTag("Blip") && falling){
+			// if (other.GetComponent<Tile>().falling){
+			// 	falling = false;
+			// 	//undo to stop overlap
+			// 	transform.position = transform.position - Vector3.down * fallSpeed * Time.deltaTime;
+			// 	return;
+			// }
 			falling = false;
+			//adjust position to previous before snapping
+			transform.position = transform.position - Vector3.down * fallSpeed * Time.deltaTime;
 			SnapToGrid();
 		}
 	}
