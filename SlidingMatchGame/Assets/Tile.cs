@@ -168,55 +168,65 @@ public class Tile : MonoBehaviour {
 
 	void Match(){
 		List<Tile> linkedTiles = new List<Tile>();
+		List<Tile> buffer = new List<Tile>();
 		linkedTiles.Add(this);
 		
 		//find any tiles to remove
 		bool foundNone = false;
 		while(!foundNone){
+			print("In while loop");
 			foundNone = true;
 			foreach(Tile tile in linkedTiles){
 				//left
-				Vector2 point = (Vector2) transform.position + Vector2.left * cellSize;
+				Vector2 point = (Vector2) tile.transform.position + Vector2.left * cellSize;
 				Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-				if (coll == null){
+				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type != type && !linkedTiles.Contains(myTile)){
-						linkedTiles.Add(myTile);
+					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+						buffer.Add(myTile);
 						foundNone = false;
 					}
 				}
 				//right
-				point = (Vector2) transform.position + Vector2.right * cellSize;
+				point = (Vector2) tile.transform.position + Vector2.right * cellSize;
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-				if (coll == null){
+				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type != type && !linkedTiles.Contains(myTile)){
-						linkedTiles.Add(myTile);
+					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+						buffer.Add(myTile);
 						foundNone = false;
 					}
 				}
 				//up
-				point = (Vector2) transform.position + Vector2.up * cellSize;
+				point = (Vector2) tile.transform.position + Vector2.up * cellSize;
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-				if (coll == null){
+				if (coll != null){
+					print("up coll exists");
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type != type && !linkedTiles.Contains(myTile)){
-						linkedTiles.Add(myTile);
+					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+						print("adding tile");
+						buffer.Add(myTile);
 						foundNone = false;
 					}
 				}
 				//down
-				point = (Vector2) transform.position + Vector2.down * cellSize;
+				point = (Vector2) tile.transform.position + Vector2.down * cellSize;
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-				if (coll == null){
+				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type != type && !linkedTiles.Contains(myTile)){
-						linkedTiles.Add(myTile);
+					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+						buffer.Add(myTile);
 						foundNone = false;
 					}
 				}
 			}
+			foreach (Tile tile in buffer)
+			{
+				if (!linkedTiles.Contains(tile))
+					linkedTiles.Add(tile);
+			}
 		}
+		print(linkedTiles.Count);
 		if (linkedTiles.Count >= 3){
 			foreach(Tile tile in linkedTiles)
 				Destroy(tile.gameObject);
