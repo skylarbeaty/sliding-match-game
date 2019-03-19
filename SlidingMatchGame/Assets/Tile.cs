@@ -7,7 +7,7 @@ public class Tile : MonoBehaviour {
 	public enum tyleType {red, purple};
 	public tyleType type = tyleType.red;
 	bool falling = true;
-	float fallSpeed = 3.0f;
+	float fallSpeed = 5.0f;
 
 	float cellSize = 0.5f;
 	int width = 8, height = 15;//in number of blips 
@@ -52,6 +52,14 @@ public class Tile : MonoBehaviour {
 			falling = true;
 	}
 
+	// void OnCollisionEnter2D(Collision2D other)
+	// {
+	// 	print("COLL");
+	// }
+	// void OnCollisionStay2D(Collision2D other)
+	// {
+	// 	print("Coll Stay");
+	// }
 	void OnTriggerEnter2D(Collider2D other)
 	{
 		if(other.CompareTag("Blip")){
@@ -83,7 +91,6 @@ public class Tile : MonoBehaviour {
 	
 	void OnMouseDown()
 	{
-		print("MOUSE DOWN");
 		clicked = true;
 		mouseStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		dragStart = transform.position;
@@ -91,6 +98,8 @@ public class Tile : MonoBehaviour {
 	void OnMouseUp()
 	{
 		print("MOUSE UP");
+		if (!dragging)//on just click, check match
+			Match();
 		clicked = false;
 		dragging = false;
 		draggingHappening = false;
@@ -108,7 +117,6 @@ public class Tile : MonoBehaviour {
 		//start drag
 		float dragThres = 0.3f;
 		if (!dragging && (Mathf.Abs(mouseDelta.x) > dragThres || Mathf.Abs(mouseDelta.y) > dragThres)){
-			print("DRAG TRIGGERED");
 			//figure out drag dir
 			if (Mathf.Abs(mouseDelta.x) > Mathf.Abs(mouseDelta.y))
 				dragDir = Vector3.right;
@@ -122,7 +130,6 @@ public class Tile : MonoBehaviour {
 			Vector2 size = new Vector2(0.4f,0.4f);
 			size += (Vector2) dragDir * width * cellSize * 2.0f; //make wide on corect side
 			colls = Physics2D.OverlapBoxAll(transform.position, size, 0.0f, mask);
-			print("Colls length: " + colls.Length);
 			foreach (Collider2D coll in colls){ //add all in line to group
 				if (coll == null)
 					continue;
@@ -157,5 +164,81 @@ public class Tile : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	void Match(){
+		List<Tile> tilesLeft = new List<Tile>();
+		List<Tile> tilesRight = new List<Tile>();
+		List<Tile> tilesTop = new List<Tile>();
+		List<Tile> tilesBot = new List<Tile>();
+
+		//add tiles in each dir to lists
+		for(int i = 1; i < width; ++i){//left
+			Vector2 point = (Vector2) transform.position - Vector2.right * i * cellSize;
+			Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
+			if (coll == null)
+				break;//end on blank space
+			Tile myTile = coll.GetComponent<Tile>();
+			if (myTile.type != type)
+				break;
+			tilesLeft.Add(myTile);
+		}
+		for(int i = 1; i < width; ++i){//right
+			Vector2 point = (Vector2) transform.position + Vector2.right * i * cellSize;
+			Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
+			if (coll == null)
+				break;//end on blank space
+			Tile myTile = coll.GetComponent<Tile>();
+			if (myTile.type != type)
+				break;
+			tilesRight.Add(myTile);
+		}
+		for(int i = 1; i < height; ++i){//up
+			Vector2 point = (Vector2) transform.position + Vector2.up * i * cellSize;
+			Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
+			if (coll == null)
+				break;//end on blank space
+			Tile myTile = coll.GetComponent<Tile>();
+			if (myTile.type != type)
+				break;
+			tilesTop.Add(myTile);
+		}
+		for(int i = 1; i < height; ++i){//down
+			Vector2 point = (Vector2) transform.position - Vector2.up * i * cellSize;
+			Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
+			if (coll == null)
+				break;//end on blank space
+			Tile myTile = coll.GetComponent<Tile>();
+			if (myTile.type != type)
+				break;
+			tilesBot.Add(myTile);
+		}
+		//check tile lists for valid moves
+		bool destHor = false;
+		bool destVert = false;
+		int matchNum = 3;
+		
+		print("Top: " + tilesTop.Count + " Bot: " + tilesBot.Count);
+
+		if (tilesLeft.Count + tilesRight.Count + 1 >= matchNum)
+			destHor = true;
+		if (tilesTop.Count + tilesBot.Count + 1 >= matchNum)
+			destVert = true;
+
+		//break tiles inside of valid moves
+		if (destHor){
+			foreach(Tile tile in tilesLeft)
+				Destroy(tile.gameObject);
+			foreach(Tile tile in tilesRight)
+				Destroy(tile.gameObject);
+		}
+		if (destVert){
+			foreach(Tile tile in tilesTop)
+				Destroy(tile.gameObject);
+			foreach(Tile tile in tilesBot)
+				Destroy(tile.gameObject);
+		}
+		if (destHor || destVert)
+			Destroy(gameObject);
 	}
 }
