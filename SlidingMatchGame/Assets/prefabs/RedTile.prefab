@@ -24,7 +24,7 @@ GameObject:
   - component: {fileID: 50731870631443658}
   - component: {fileID: 114065920542910878}
   m_Layer: 8
-  m_Name: Red
+  m_Name: RedTile
   m_TagString: Blip
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

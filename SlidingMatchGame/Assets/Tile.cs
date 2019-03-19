@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 	static bool draggingHappening = false;
-	public enum tyleType {red, purple};
+	public enum tyleType {red, purple, yellow, green};
 	public tyleType type = tyleType.red;
 	bool falling = false;
 	float fallSpeed = 5.0f;
