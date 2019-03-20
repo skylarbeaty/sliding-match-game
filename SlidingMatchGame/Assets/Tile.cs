@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 	public static bool draggingHappening = false;
+	public static bool haveDragged = false;
+	public static int matchesInRow = 0;
 	public enum tyleType {red, purple, yellow, green, blue, cyan, pink, orange};
 	public tyleType type = tyleType.red;
 	bool falling = false;
@@ -96,6 +98,7 @@ public class Tile : MonoBehaviour {
 		clicked = true;
 		mouseStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		dragStart = transform.position;
+		matchesInRow = 0;
 	}
 
 	void OnMouseUp()
@@ -182,6 +185,7 @@ public class Tile : MonoBehaviour {
 				dragDir = Vector3.up;
 			dragging = true;
 			draggingHappening = true;
+			haveDragged = true;
 
 			//get drag group
 			Collider2D[] colls;
@@ -287,6 +291,8 @@ public class Tile : MonoBehaviour {
 		if (linkedTiles.Count >=3 && justCheck)
 			return true;
 		if (linkedTiles.Count >= 3){
+			matchesInRow++;
+			FindObjectOfType<Scorer>().AddScore(linkedTiles.Count, matchesInRow);
 			foreach(Tile tile in linkedTiles)
 				Destroy(tile.gameObject);
 		}

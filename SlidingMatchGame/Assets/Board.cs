@@ -14,6 +14,8 @@ public class Board : MonoBehaviour {
 	public GameObject[] tiles;
 	int fastThres = 15;
 	void Start () {
+		Tile.matchesInRow = 0;
+		Tile.haveDragged = false;
 		totalTiles = width * height;
 		nextCheck = Time.time + timeBetweenChecks;
 		nextDrop = Time.time + 10.0f;
