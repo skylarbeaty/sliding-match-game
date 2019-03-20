@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Board : MonoBehaviour {
 	float nextCheck = -1, timeBetweenChecks = 0.5f;
-	float nextDrop = -1, timeBetweenDrops = 2.0f, timeBetweenDropsFast = 1.0f;
+	float nextDrop = -1, timeBetweenDrops = 2.0f, timeBetweenDropsFast = 0.5f;
 	float nextStartSpawn = -1, timeBetweenStartSpawns = 0.1f;
 	bool starting = true;
-	int numStartTiles = 0, numStartTilesMax = 50;
+	int numStartTiles = 0, numStartTilesMax = 60;
 	int width = 8, height = 15, totalTiles;
 	float spawnY = 7.0f, spawnXMax = 3.5f;
 	public LayerMask mask;
 	public GameObject[] tiles;
-	int fastThres = 15;
+	int fastThres = 30;
 	void Start () {
 		Tile.matchesInRow = 0;
 		Tile.haveDragged = false;
@@ -55,7 +55,7 @@ public class Board : MonoBehaviour {
 		numStartTiles++;
 	}
 	void CheckAllMatches(){
-		if (Time.time < nextCheck || Tile.draggingHappening)
+		if (Time.time < nextCheck || Tile.draggingHappening || Scorer.ended)
 			return;
 		nextCheck = Time.time + timeBetweenChecks;
 		foreach(Tile tile in FindObjectsOfType<Tile>()){
@@ -63,7 +63,7 @@ public class Board : MonoBehaviour {
 		}
 	}
 	void CheckDropBlock(){
-		if (Time.time < nextDrop || starting)
+		if (Time.time < nextDrop || starting || Scorer.ended)
 			return;
 		int numTiles = FindObjectsOfType<Tile>().Length;
 		if (numTiles < fastThres)

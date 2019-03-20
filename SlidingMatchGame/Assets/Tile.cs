@@ -35,6 +35,11 @@ public class Tile : MonoBehaviour {
 		GoBackStep();
 	}
 
+	public void OnEnd(){
+		if (dragging)
+			goingBack = true;
+	}
+
 	void Move(){
 		if (falling){
 			float yPos = transform.position.y;
@@ -103,6 +108,8 @@ public class Tile : MonoBehaviour {
 
 	void OnMouseUp()
 	{
+		if(Scorer.ended)
+			return;
 		if (!dragging)//on just click, check match
 			Match();
 		clicked = false;
@@ -172,6 +179,8 @@ public class Tile : MonoBehaviour {
 
 	void OnMouseDrag()
 	{
+		if(Scorer.ended)
+			return;
 		Vector3 mouseCur = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		Vector3 mouseDelta = mouseCur - mouseStart;
 
