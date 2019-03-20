@@ -4,14 +4,22 @@ using UnityEngine;
 
 public class Board : MonoBehaviour {
 	float nextCheck = -1, timeBetweenChecks = 0.5f;
-
+	float nextDrop = -1, timeBetweenDrops = 3.0f, timeBetweenDropsFast = 1.0f;
+	int width = 8, height = 15, totalTiles;
+	float spawnY = 7.0f, spawnXMax = 3.5f;
+	public LayerMask mask;
+	public GameObject[] tiles;
+	int fastThres = 15;
 	void Start () {
+		totalTiles = width * height;
 		nextCheck = Time.time + timeBetweenChecks;
+		nextDrop = Time.time + 10.0f;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		CheckAllMatches();
+		CheckDropBlock();
 	}
 	void CheckAllMatches(){
 		if (Time.time < nextCheck || Tile.draggingHappening)
@@ -20,5 +28,36 @@ public class Board : MonoBehaviour {
 		foreach(Tile tile in FindObjectsOfType<Tile>()){
 			tile.Match();
 		}
+	}
+	void CheckDropBlock(){
+		if (Time.time < nextDrop)
+			return;
+		int numTiles = FindObjectsOfType<Tile>().Length;
+		if (numTiles < fastThres)
+			nextDrop = Time.time + timeBetweenDropsFast;
+		else 
+			nextDrop = Time.time + timeBetweenDrops;
+		if (numTiles >= totalTiles)
+			return;
+			
+		//find which x's have room
+		Vector2 point = new Vector2(spawnXMax / 2.0f,7.0f);
+		Vector2 size = new Vector2(width / 2.0f, 0.4f);
+		Collider2D[] colls = Physics2D.OverlapBoxAll(point, size, 0.0f, mask);
+		List<float> validX = new List<float>();
+		for (int i = 0; i < width; ++i){//create list of all valid positions
+			validX.Add((float) i * 0.5f);
+		}
+		if (colls.Length != 0)//remove positions that have a tile there
+			foreach(Collider2D coll in colls)
+				validX.Remove(coll.transform.position.x);
+
+		//pick randomly between possible x's
+		int index = Mathf.RoundToInt(Random.value * (validX.Count -1));
+		Vector3 spawnPos = new Vector3(validX[index], 7.0f, 0.0f);
+
+		//spwan a tile in
+		index = Mathf.RoundToInt(Random.value * (tiles.Length -1));
+		Instantiate(tiles[index], spawnPos, Quaternion.identity);
 	}
 }

@@ -10,7 +10,7 @@ public class Tile : MonoBehaviour {
 	float fallSpeed = 5.0f;
 
 	float cellSize = 0.5f;
-	int width = 8, height = 15;//in number of blips 
+	int width = 8, height = 15;//in number of tiles 
 	float leftEdge = 0;
 	float rightEdge;
 	float bottomEdge = 0.0f;
