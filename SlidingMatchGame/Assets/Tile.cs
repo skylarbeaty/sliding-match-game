@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour {
 	public static bool draggingHappening = false;
-	public enum tyleType {red, purple, yellow, green};
+	public enum tyleType {red, purple, yellow, green, blue, cyan, pink, orange};
 	public tyleType type = tyleType.red;
 	bool falling = false;
 	float fallSpeed = 5.0f;
@@ -186,7 +186,7 @@ public class Tile : MonoBehaviour {
 			//get drag group
 			Collider2D[] colls;
 			Vector2 size = new Vector2(0.4f,0.4f);
-			size += (Vector2) dragDir * width * cellSize * 2.0f; //make wide on corect side
+			size += (Vector2) dragDir * height * cellSize * 2.0f; //make wide on corect side
 			colls = Physics2D.OverlapBoxAll(transform.position, size, 0.0f, mask);
 			foreach (Collider2D coll in colls){ //add all in line to group
 				if (coll == null)
