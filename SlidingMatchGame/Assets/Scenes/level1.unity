@@ -383,7 +383,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
   tiles:
   - {fileID: 1925225517809382, guid: 8e8cce7dbfbe040e99b85bb82e695cfd, type: 2}
   - {fileID: 1707603455543930, guid: 47874b4dad702463f9728dd4694d4dbe, type: 2}
