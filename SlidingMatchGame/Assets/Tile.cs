@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Tile : MonoBehaviour {
-	static bool draggingHappening = false;
+	public static bool draggingHappening = false;
 	public enum tyleType {red, purple, yellow, green};
 	public tyleType type = tyleType.red;
 	bool falling = false;
@@ -17,7 +17,7 @@ public class Tile : MonoBehaviour {
 	float topEdge;
 
 	public LayerMask mask;
-	bool dragging = false, clicked = false;
+	bool dragging = false, clicked = false, goingBack = false;
 	Vector3 mouseStart, dragStart, dragDir;
 	List<Tile> dragGroup;
 	
@@ -26,9 +26,11 @@ public class Tile : MonoBehaviour {
 		topEdge = bottomEdge + (height - 1) * cellSize;
 		dragGroup = new List<Tile>();
 	}
+
 	void Update(){
 		Move();
 		CheckBellow();
+		GoBackStep();
 	}
 
 	void Move(){
@@ -95,18 +97,74 @@ public class Tile : MonoBehaviour {
 		mouseStart = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		dragStart = transform.position;
 	}
+
 	void OnMouseUp()
 	{
-		print("MOUSE UP");
 		if (!dragging)//on just click, check match
 			Match();
 		clicked = false;
+		if (dragging){
+			//check to see if match has been made
+			bool anyMatch = false;
+			foreach(Tile tile in dragGroup){
+				if (tile.Match(true)){
+					anyMatch = true;
+					break;
+				}
+			}
+			//lock in if it has
+			if (anyMatch){
+				PopDragGroup();
+			}
+			//go back if it hasnt
+			else{
+				goingBack = true;
+			}
+		}
+	}
+
+	void PopDragGroup(){
 		dragging = false;
 		draggingHappening = false;
 		foreach(Tile tile in dragGroup){
 			tile.SnapToGrid();
 		}
+		foreach(Tile tile in dragGroup){
+			Match();
+		}
 		dragGroup.Clear();
+	}
+
+	void GoBackStep(){
+		if (!goingBack)
+			return;
+		Vector3 dragDelta = (transform.position - dragStart) * 0.9f;
+		foreach(Tile tile in dragGroup){
+			//move the tile
+			tile.transform.position = tile.dragStart + dragDelta;
+			//warp around hor
+			if (tile.transform.position.x < leftEdge - 0.49){
+				tile.transform.position = tile.transform.position + Vector3.right * width * cellSize;
+				tile.dragStart = tile.transform.position - dragDelta;
+			}
+			if (tile.transform.position.x > rightEdge + 0.49){
+				tile.transform.position = tile.transform.position - Vector3.right * width * cellSize;
+				tile.dragStart = tile.transform.position - dragDelta;
+			}
+			//warp around vert
+			if (tile.transform.position.y < bottomEdge - 0.49){
+				tile.transform.position = tile.transform.position + Vector3.up * height * cellSize;
+				tile.dragStart = tile.transform.position - dragDelta;
+			}
+			if (tile.transform.position.y > topEdge + 0.49){
+				tile.transform.position = tile.transform.position - Vector3.up * height * cellSize;
+				tile.dragStart = tile.transform.position - dragDelta;
+			}
+		}
+		if (dragDelta.magnitude < cellSize / 2.0f){
+			goingBack = false;
+			PopDragGroup();
+		}
 	}
 
 	void OnMouseDrag()
@@ -166,7 +224,10 @@ public class Tile : MonoBehaviour {
 		}
 	}
 
-	void Match(){
+	public void Match(){//if not checking just pass false
+		Match(false);
+	}
+	bool Match(bool justCheck){
 		List<Tile> linkedTiles = new List<Tile>();
 		List<Tile> buffer = new List<Tile>();
 		linkedTiles.Add(this);
@@ -174,7 +235,6 @@ public class Tile : MonoBehaviour {
 		//find any tiles to remove
 		bool foundNone = false;
 		while(!foundNone){
-			print("In while loop");
 			foundNone = true;
 			foreach(Tile tile in linkedTiles){
 				//left
@@ -201,10 +261,8 @@ public class Tile : MonoBehaviour {
 				point = (Vector2) tile.transform.position + Vector2.up * cellSize;
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
 				if (coll != null){
-					print("up coll exists");
 					Tile myTile = coll.GetComponent<Tile>();
 					if (myTile.type == type && !linkedTiles.Contains(myTile)){
-						print("adding tile");
 						buffer.Add(myTile);
 						foundNone = false;
 					}
@@ -226,87 +284,12 @@ public class Tile : MonoBehaviour {
 					linkedTiles.Add(tile);
 			}
 		}
-		print(linkedTiles.Count);
+		if (linkedTiles.Count >=3 && justCheck)
+			return true;
 		if (linkedTiles.Count >= 3){
 			foreach(Tile tile in linkedTiles)
 				Destroy(tile.gameObject);
 		}
-
+	return false;
 	}
-
-	// void Match(){
-	// 	List<Tile> tilesLeft = new List<Tile>();
-	// 	List<Tile> tilesRight = new List<Tile>();
-	// 	List<Tile> tilesTop = new List<Tile>();
-	// 	List<Tile> tilesBot = new List<Tile>();
-
-	// 	//add tiles in each dir to lists
-	// 	for(int i = 1; i < width; ++i){//left
-	// 		Vector2 point = (Vector2) transform.position - Vector2.right * i * cellSize;
-	// 		Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-	// 		if (coll == null)
-	// 			break;//end on blank space
-	// 		Tile myTile = coll.GetComponent<Tile>();
-	// 		if (myTile.type != type)
-	// 			break;
-	// 		tilesLeft.Add(myTile);
-	// 	}
-	// 	for(int i = 1; i < width; ++i){//right
-	// 		Vector2 point = (Vector2) transform.position + Vector2.right * i * cellSize;
-	// 		Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-	// 		if (coll == null)
-	// 			break;//end on blank space
-	// 		Tile myTile = coll.GetComponent<Tile>();
-	// 		if (myTile.type != type)
-	// 			break;
-	// 		tilesRight.Add(myTile);
-	// 	}
-	// 	for(int i = 1; i < height; ++i){//up
-	// 		Vector2 point = (Vector2) transform.position + Vector2.up * i * cellSize;
-	// 		Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-	// 		if (coll == null)
-	// 			break;//end on blank space
-	// 		Tile myTile = coll.GetComponent<Tile>();
-	// 		if (myTile.type != type)
-	// 			break;
-	// 		tilesTop.Add(myTile);
-	// 	}
-	// 	for(int i = 1; i < height; ++i){//down
-	// 		Vector2 point = (Vector2) transform.position - Vector2.up * i * cellSize;
-	// 		Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
-	// 		if (coll == null)
-	// 			break;//end on blank space
-	// 		Tile myTile = coll.GetComponent<Tile>();
-	// 		if (myTile.type != type)
-	// 			break;
-	// 		tilesBot.Add(myTile);
-	// 	}
-	// 	//check tile lists for valid moves
-	// 	bool destHor = false;
-	// 	bool destVert = false;
-	// 	int matchNum = 3;
-		
-	// 	print("Top: " + tilesTop.Count + " Bot: " + tilesBot.Count);
-
-	// 	if (tilesLeft.Count + tilesRight.Count + 1 >= matchNum)
-	// 		destHor = true;
-	// 	if (tilesTop.Count + tilesBot.Count + 1 >= matchNum)
-	// 		destVert = true;
-
-	// 	//break tiles inside of valid moves
-	// 	if (destHor){
-	// 		foreach(Tile tile in tilesLeft)
-	// 			Destroy(tile.gameObject);
-	// 		foreach(Tile tile in tilesRight)
-	// 			Destroy(tile.gameObject);
-	// 	}
-	// 	if (destVert){
-	// 		foreach(Tile tile in tilesTop)
-	// 			Destroy(tile.gameObject);
-	// 		foreach(Tile tile in tilesBot)
-	// 			Destroy(tile.gameObject);
-	// 	}
-	// 	if (destHor || destVert)
-	// 		Destroy(gameObject);
-	// }
 }
