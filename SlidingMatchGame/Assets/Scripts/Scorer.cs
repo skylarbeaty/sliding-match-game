@@ -25,6 +25,7 @@ public class Scorer : MonoBehaviour {
 			ended = true;
 			foreach(Tile tile in FindObjectsOfType<Tile>())
 				tile.OnEnd();
+			FindObjectOfType<AudioManager>().PlayTimer();
 		}
 		timerText.text = Mathf.Round(timer).ToString();
 	}

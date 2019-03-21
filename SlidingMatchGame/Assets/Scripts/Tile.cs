@@ -22,14 +22,23 @@ public class Tile : MonoBehaviour {
 	bool dragging = false, clicked = false, goingBack = false;
 	Vector3 mouseStart, dragStart, dragDir;
 	List<Tile> dragGroup;
-	
+
+	AudioManager audio;
+	bool leaving = false;
+	float scalePerc = 0.0f, scaleSpeed = 3.0f;
+	public AnimationCurve outCurve;
+
 	void Start(){
 		rightEdge = leftEdge + (width - 1) * cellSize;
 		topEdge = bottomEdge + (height - 1) * cellSize;
 		dragGroup = new List<Tile>();
+		audio = FindObjectOfType<AudioManager>();
 	}
 
 	void Update(){
+		AnimatingOut();
+		if (leaving)
+			return;
 		Move();
 		CheckBellow();
 		GoBackStep();
@@ -57,8 +66,10 @@ public class Tile : MonoBehaviour {
 			return;
 		Vector2 point = (Vector2) transform.position + Vector2.down * cellSize;
 		Collider2D other = Physics2D.OverlapCircle(point, 0.2f, mask);
-		if (other == null)
+		if (other == null && !falling){
 			falling = true;
+			// audio.PlayFall();
+		}
 	}
 	
 	void OnTriggerEnter2D(Collider2D other)
@@ -74,6 +85,7 @@ public class Tile : MonoBehaviour {
 			//adjust position to previous before snapping
 			transform.position = transform.position - Vector3.down * fallSpeed * Time.deltaTime;
 			SnapToGrid();
+			audio.PlayLand();
 		}
 	}
 
@@ -255,7 +267,7 @@ public class Tile : MonoBehaviour {
 				Collider2D coll = Physics2D.OverlapCircle(point, 0.24f, mask);
 				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+					if (myTile.type == type && !linkedTiles.Contains(myTile) && !myTile.leaving){
 						buffer.Add(myTile);
 						foundNone = false;
 					}
@@ -265,7 +277,7 @@ public class Tile : MonoBehaviour {
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
 				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+					if (myTile.type == type && !linkedTiles.Contains(myTile) && !myTile.leaving){
 						buffer.Add(myTile);
 						foundNone = false;
 					}
@@ -275,7 +287,7 @@ public class Tile : MonoBehaviour {
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
 				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+					if (myTile.type == type && !linkedTiles.Contains(myTile) && !myTile.leaving){
 						buffer.Add(myTile);
 						foundNone = false;
 					}
@@ -285,7 +297,7 @@ public class Tile : MonoBehaviour {
 				coll = Physics2D.OverlapCircle(point, 0.24f, mask);
 				if (coll != null){
 					Tile myTile = coll.GetComponent<Tile>();
-					if (myTile.type == type && !linkedTiles.Contains(myTile)){
+					if (myTile.type == type && !linkedTiles.Contains(myTile) && !myTile.leaving){
 						buffer.Add(myTile);
 						foundNone = false;
 					}
@@ -302,9 +314,26 @@ public class Tile : MonoBehaviour {
 		if (linkedTiles.Count >= 3){
 			matchesInRow++;
 			FindObjectOfType<Scorer>().AddScore(linkedTiles.Count, matchesInRow);
-			foreach(Tile tile in linkedTiles)
-				Destroy(tile.gameObject);
+			audio.PlayMatch();
+			foreach(Tile tile in linkedTiles){
+				tile.leaving = true;
+				// Destroy(tile.gameObject);
+			}
 		}
 	return false;
+	}
+	void AnimatingOut(){
+		if (!leaving)
+			return;
+
+		scalePerc += scaleSpeed * Time.deltaTime;
+		if (scalePerc > 1.0f)
+			scalePerc = 1.0f;
+
+		float scale = outCurve.Evaluate(scalePerc);
+		transform.localScale = Vector3.one * scale;
+
+		if (scalePerc == 1.0f)
+			Destroy(gameObject);
 	}
 }

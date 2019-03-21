@@ -103,6 +103,48 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 256
+  outCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.1648065
+      value: 1.092944
+      inSlope: -0.20809828
+      outSlope: -0.20809828
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.115221895
+    - serializedVersion: 3
+      time: 0.78462446
+      value: -0.05701538
+      inSlope: -0.69300455
+      outSlope: -0.69300455
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.19745107
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!212 &212111954539931324
 SpriteRenderer:
   m_ObjectHideFlags: 1
